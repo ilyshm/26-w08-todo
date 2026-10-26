@@ -9,6 +9,7 @@ const PRIORITIES = {
 let tasks = loadTasks();
 let currentFilter = "all";
 let editingTaskId = null;
+let pendingDeleteId = null;
 
 const elements = {
   form: document.querySelector("#taskForm"),
@@ -23,7 +24,12 @@ const elements = {
   progressPercent: document.querySelector("#progressPercent"),
   progressBar: document.querySelector("#progressBar"),
   progress: document.querySelector("#progressTrack"),
-  filters: document.querySelectorAll("[data-filter]")
+  filters: document.querySelectorAll("[data-filter]"),
+  deleteDialog: document.querySelector("#deleteDialog"),
+  deleteTargetText: document.querySelector("#deleteTargetText"),
+  cancelDelete: document.querySelector("#cancelDelete"),
+  confirmDelete: document.querySelector("#confirmDelete"),
+  celebrationRibbon: document.querySelector("#celebrationRibbon")
 };
 
 initialize();
@@ -36,6 +42,8 @@ function initialize() {
   elements.form.addEventListener("submit", handleAddTask);
   elements.taskList.addEventListener("click", handleTaskAction);
   elements.taskList.addEventListener("change", handleTaskChange);
+  elements.cancelDelete.addEventListener("click", closeDeleteDialog);
+  elements.confirmDelete.addEventListener("click", confirmDeleteTask);
   elements.filters.forEach((button) => {
     button.addEventListener("click", () => {
       currentFilter = button.dataset.filter;
@@ -97,10 +105,9 @@ function handleTaskAction(event) {
   if (!task) return;
 
   if (actionButton.dataset.action === "delete") {
-    tasks = tasks.filter((item) => item.id !== taskId);
-    editingTaskId = null;
-    saveTasks();
-    render();
+    pendingDeleteId = taskId;
+    elements.deleteTargetText.textContent = task.text;
+    elements.deleteDialog.showModal();
   }
   if (actionButton.dataset.action === "edit") {
     editingTaskId = taskId;
@@ -119,9 +126,52 @@ function handleTaskChange(event) {
   if (!checkbox) return;
   const task = tasks.find((item) => item.id === checkbox.dataset.completeId);
   if (!task) return;
+  const wasCompleted = task.isCompleted;
   task.isCompleted = checkbox.checked;
   saveTasks();
   render();
+  if (!wasCompleted && task.isCompleted) showCelebration();
+}
+
+function closeDeleteDialog() {
+  pendingDeleteId = null;
+  elements.deleteDialog.close();
+}
+
+function confirmDeleteTask() {
+  if (!pendingDeleteId) return;
+  tasks = tasks.filter((item) => item.id !== pendingDeleteId);
+  editingTaskId = null;
+  saveTasks();
+  closeDeleteDialog();
+  render();
+}
+
+function showCelebration() {
+  elements.celebrationRibbon.replaceChildren();
+  const bow = document.createElement("div");
+  bow.className = "ribbon-bow";
+  ["ribbon-loop ribbon-loop-left", "ribbon-loop ribbon-loop-right", "ribbon-tail ribbon-tail-left", "ribbon-tail ribbon-tail-right", "ribbon-knot"].forEach((className) => {
+    const piece = document.createElement("span");
+    piece.className = className;
+    bow.append(piece);
+  });
+  elements.celebrationRibbon.append(bow);
+
+  for (let index = 0; index < 22; index += 1) {
+    const pollen = document.createElement("span");
+    pollen.className = "ribbon-pollen";
+    pollen.style.setProperty("--pollen-angle", `${index * 16 + 8}deg`);
+    pollen.style.setProperty("--pollen-distance", `${70 + (index % 5) * 28}px`);
+    pollen.style.setProperty("--pollen-delay", `${350 + (index % 5) * 35}ms`);
+    pollen.style.setProperty("--pollen-color", index % 3 === 0 ? "#ec4899" : index % 3 === 1 ? "#f9a8d4" : "#fbbf24");
+    elements.celebrationRibbon.append(pollen);
+  }
+  elements.celebrationRibbon.classList.remove("hidden");
+  window.setTimeout(() => {
+    elements.celebrationRibbon.classList.add("hidden");
+    elements.celebrationRibbon.replaceChildren();
+  }, 1600);
 }
 
 function saveEdit(taskId, taskItem) {

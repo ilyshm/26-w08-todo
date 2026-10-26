@@ -92,6 +92,18 @@
       <div id="taskList" class="grid gap-3" aria-live="polite"></div>
     </section>
   </main>
+  <dialog id="deleteDialog" class="w-[min(90vw,28rem)] rounded-3xl border-0 bg-white p-0 text-slate-800 shadow-2xl backdrop:bg-slate-900/40">
+    <div class="p-6 sm:p-7">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-pink-500">DELETE PLAN</p>
+      <h2 class="mt-2 text-xl font-black">이 계획을 삭제할까요?</h2>
+      <p id="deleteTargetText" class="mt-3 break-anywhere rounded-xl bg-pink-50 p-3 text-sm text-slate-600"></p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button id="cancelDelete" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:bg-slate-50" type="button">취소</button>
+        <button id="confirmDelete" class="rounded-xl bg-pink-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-pink-600" type="button">삭제하기</button>
+      </div>
+    </div>
+  </dialog>
+  <div id="celebrationRibbon" class="pointer-events-none fixed inset-0 z-50 hidden overflow-hidden" aria-live="polite" aria-label="완료 축하 효과"></div>
   <script src="script.js"></script>
 </body>
 </html>
